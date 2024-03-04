@@ -4,37 +4,24 @@ def calculate_score(text):
 
 
 def split_text(text: str, polish_words_list: set[str], logs_file) -> tuple[int, str]:
+    print(text)
     if text in polish_words_list:
-        score = pow(len(text), 2)
-        return score, text
+        return calculate_score(text), text
+    elif len(text) == 1 and text in polish_words_list:
+        return 1, text
+    elif len(text) <= 1:
+        return 0, text
 
-    if len(text) == 1:
-        return 0, ""
-
-    best_score = 0
-    best_partition = ""
-
+    best_score: int = 0
+    best_split: str = ""
     for i in range(1, len(text)):
-        left_part = text[:i]
-        right_part = text[i:]
+        left_score, left_text = split_text(text[:i], polish_words_list, logs_file)
+        right_score, right_text = split_text(text[i:], polish_words_list, logs_file)
+        if left_score + right_score > best_score:
+            best_score = left_score + right_score
+            best_split = left_text + " " + right_text
 
-        if left_part in polish_words_list:
-            left_score, left_partition = split_text(right_part, polish_words_list, logs_file)
-            current_score = pow(len(left_part), 2) + left_score
-
-            if current_score > best_score:
-                best_score = current_score
-                best_partition = left_part + " " + left_partition
-
-        if right_part in polish_words_list:
-            right_score, right_partition = split_text(left_part, polish_words_list, logs_file)
-            current_score = pow(len(right_part), 2) + right_score
-
-            if current_score > best_score:
-                best_score = current_score
-                best_partition = right_partition + " " + right_part
-
-    return best_score, best_partition
+    return best_score, best_split
 
 
 def reconstruct_text(input_file_path: str, output_file_path: str, logs_file_path: str, polish_words_list: set[str]):
