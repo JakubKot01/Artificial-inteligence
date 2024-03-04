@@ -1,4 +1,6 @@
-DEBUG: bool = False
+from collections import deque
+
+DEBUG: bool = True
 IS_IN_CHECK: bool = False
 
 INF: int = 256
@@ -121,87 +123,56 @@ def is_move_available(white_turn, move_name, position, i=1):
     return True
 
 
-def find_solution(depth: int, white_king_position: list[int],
+def find_solution(white_king_position: list[int],
                   white_tower_position: list[int],
                   black_king_position: list[int],
                   white_turn: bool):
     global INF, OCCUPIED_POSITIONS, DEBUG, IS_IN_CHECK
 
-    if DEBUG:
-        print_board(white_king_position, white_tower_position, black_king_position)
-
-    OCCUPIED_POSITIONS["WHITE_KING"] = white_king_position
-    OCCUPIED_POSITIONS["WHITE_TOWER"] = white_tower_position
-    OCCUPIED_POSITIONS["BLACK_KING"] = black_king_position
-
-    no_moves = True
+    queue = deque([(1, white_king_position, white_tower_position, black_king_position, white_turn)])
     best_result = INF
 
-    if white_turn:
-        for figure in ['Tower', 'King']:
-            if figure == 'King':
-                for move in king_moves:
-                    if is_move_available(white_turn, move, white_king_position):
-                        print(f'Move for white {figure} available: Old position: {white_king_position}', end=", ")
-                        white_king_position[0] += moves_dict[move][0]
-                        white_king_position[1] += moves_dict[move][1]
-                        print(f'New position: {white_king_position}')
-                        result = find_solution(depth + 1,
-                                               white_king_position,
-                                               white_tower_position,
-                                               black_king_position,
-                                               white_turn=False)
-                        if result < best_result:
-                            best_result = result
-                        white_king_position -= moves_dict[move]  # Backtrack
-                    else:
-                        print(f'Move for white {figure} is not available')
-            if figure == 'Tower':
-                for move in king_moves:
-                    for i in range(1, 9):
-                        if is_move_available(white_turn, move, white_tower_position, i=i):
-                            print(f'Move for white {figure} available: Old position: {white_tower_position}', end=", ")
-                            white_tower_position[0] += moves_dict[move][0] * i
-                            white_tower_position[1] += moves_dict[move][1] * i
-                            print(f'New position: {white_tower_position}')
-                            if black_king_position[0] == white_tower_position[0] \
-                                    or black_king_position[1] == white_tower_position[1]:
-                                IS_IN_CHECK = True
-                            else:
-                                IS_IN_CHECK = False
-                            result = find_solution(depth + 1,
-                                                   white_king_position,
-                                                   white_tower_position,
-                                                   black_king_position,
-                                                   white_turn=False)
-                            if result < best_result:
-                                best_result = result
-                            white_tower_position -= moves_dict[move] * i  # Backtrack
-                        else:
-                            print(f'Move for white {figure} is not available')
+    while queue:
+        depth, white_king_position, white_tower_position, black_king_position, white_turn = queue.popleft()
 
-    else:
-        for move in king_moves:
-            if is_move_available(white_turn, move, black_king_position):
-                print(f'Move for black_king available: Old position: {black_king_position}', end=", ")
-                black_king_position[0] += moves_dict[move][0]
-                black_king_position[1] += moves_dict[move][1]
-                print(f'New position: {black_king_position}')
-                no_moves = False
-                result = find_solution(depth + 1,
-                                       white_king_position,
-                                       white_tower_position,
-                                       black_king_position,
-                                       white_turn=True)
-                if result < best_result:
-                    best_result = result
-                black_king_position -= moves_dict[move]  # Backtrack
-            else:
-                print(f'Move for black king is not available')
-        if no_moves and IS_IN_CHECK:
-            return depth
-        elif no_moves:
-            return INF
+        if DEBUG:
+            print_board(white_king_position, white_tower_position, black_king_position)
+
+        OCCUPIED_POSITIONS["WHITE_KING"] = white_king_position
+        OCCUPIED_POSITIONS["WHITE_TOWER"] = white_tower_position
+        OCCUPIED_POSITIONS["BLACK_KING"] = black_king_position
+
+        no_moves = True
+
+        if white_turn:
+            for figure in ['Tower', 'King']:
+                if figure == 'King':
+                    for move in king_moves:
+                        if is_move_available(white_turn, move, white_king_position):
+                            new_white_king_position = [white_king_position[0] + moves_dict[move][0],
+                                                      white_king_position[1] + moves_dict[move][1]]
+                            queue.append((depth + 1, new_white_king_position, white_tower_position,
+                                          black_king_position, False))
+                if figure == 'Tower':
+                    for move in king_moves:
+                        for i in range(1, 9):
+                            if is_move_available(white_turn, move, white_tower_position, i=i):
+                                new_white_tower_position = [white_tower_position[0] + moves_dict[move][0] * i,
+                                                            white_tower_position[1] + moves_dict[move][1] * i]
+                                queue.append((depth + 1, white_king_position, new_white_tower_position,
+                                              black_king_position, False))
+        else:
+            for move in king_moves:
+                if is_move_available(white_turn, move, black_king_position):
+                    new_black_king_position = [black_king_position[0] + moves_dict[move][0],
+                                               black_king_position[1] + moves_dict[move][1]]
+                    queue.append((depth + 1, white_king_position, white_tower_position,
+                                  new_black_king_position, True))
+                    no_moves = False
+            if no_moves and IS_IN_CHECK:
+                return depth
+            elif no_moves:
+                return INF
 
     return best_result
 
@@ -226,7 +197,7 @@ if __name__ == "__main__":
 
     available_moves = king_moves + king_moves + king_moves
 
-    result = find_solution(1, white_king_position, white_tower_position, black_king_position, white_turn=white_turn)
+    result = find_solution(white_king_position, white_tower_position, black_king_position, white_turn)
     if result == INF:
         print("INF")
     else:
