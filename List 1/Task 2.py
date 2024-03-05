@@ -1,3 +1,6 @@
+import time
+
+
 def calculate_score(text):
     words = text.split()
     return sum(pow(len(word), 2) for word in words)
@@ -23,7 +26,8 @@ def split_text(text: str, polish_words_list: set[str], logs_file, memo: dict) ->
     for i in range(1, len(text)):
         left_score, left_text = split_text(text[:i], polish_words_list, logs_file, memo)
         right_score, right_text = split_text(text[i:], polish_words_list, logs_file, memo)
-        if left_score + right_score > best_score:
+        if left_score + right_score > best_score \
+                and left_score != 0 and right_score != 0:
             best_score = left_score + right_score
             best_split = left_text + " " + right_text
 
@@ -42,6 +46,7 @@ def reconstruct_text(input_file_path: str, output_file_path: str, logs_file_path
 
 
 if __name__ == '__main__':
+    start_time = time.time()
     polish_words_file = open('polish_words.txt', 'r', encoding='utf-8')
     polish_words = set(word.strip() for word in polish_words_file)
 
@@ -49,3 +54,4 @@ if __name__ == '__main__':
                      'zad2_output.txt',
                      'zad2_logs.txt',
                      polish_words)
+    print(f"Execution time: {time.time() - start_time} seconds")
