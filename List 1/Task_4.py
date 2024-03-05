@@ -40,3 +40,5 @@ if __name__ == '__main__':
     print(f'test: {opt_dist([0, 0, 1, 0, 0, 0, 1, 0, 0, 0], 2)}')  # 2
     print(f'test: {opt_dist([0, 0, 1, 0, 0, 0, 1, 0, 0, 0], 1)}')  # 1
     print(f'test: {opt_dist([0, 0, 1, 0, 0, 0, 1, 0, 0, 0], 0)}')  # 2
+    print(f'test: {opt_dist([0, 0, 1, 1, 1, 1, 1, 0, 0, 0], 5)}')  # 0
+    print(f'test: {opt_dist([0, 0, 1, 1, 0, 1, 1, 0, 0, 0], 3)}')  # 0
