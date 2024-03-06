@@ -34,11 +34,20 @@ def opt_dist(nums: list[int], goal: int) -> int:
 
 
 if __name__ == '__main__':
-    print(f'test: {opt_dist([0, 0, 1, 0, 0, 0, 1, 0, 0, 0], 5)}')  # 3
-    print(f'test: {opt_dist([0, 0, 1, 0, 0, 0, 1, 0, 0, 0], 4)}')  # 4
-    print(f'test: {opt_dist([0, 0, 1, 0, 0, 0, 1, 0, 0, 0], 3)}')  # 3
-    print(f'test: {opt_dist([0, 0, 1, 0, 0, 0, 1, 0, 0, 0], 2)}')  # 2
-    print(f'test: {opt_dist([0, 0, 1, 0, 0, 0, 1, 0, 0, 0], 1)}')  # 1
-    print(f'test: {opt_dist([0, 0, 1, 0, 0, 0, 1, 0, 0, 0], 0)}')  # 2
-    print(f'test: {opt_dist([0, 0, 1, 1, 1, 1, 1, 0, 0, 0], 5)}')  # 0
-    print(f'test: {opt_dist([0, 0, 1, 1, 0, 1, 1, 0, 0, 0], 3)}')  # 0
+    input_file = open("zad4_input.txt", 'r', encoding='utf-8')
+    output_file = open("zad4_output.txt", 'w', encoding='utf-8')
+    for line in input_file:
+        split_line = line.split(" ")
+        input = []
+        for char in split_line[0]:
+            input.append(int(char))
+        result = opt_dist(input, int(split_line[1]))
+        output_file.write(str(result) + '\n')
+    # print(f'test: {opt_dist([0, 0, 1, 0, 0, 0, 1, 0, 0, 0], 5)}')  # 3
+    # print(f'test: {opt_dist([0, 0, 1, 0, 0, 0, 1, 0, 0, 0], 4)}')  # 4
+    # print(f'test: {opt_dist([0, 0, 1, 0, 0, 0, 1, 0, 0, 0], 3)}')  # 3
+    # print(f'test: {opt_dist([0, 0, 1, 0, 0, 0, 1, 0, 0, 0], 2)}')  # 2
+    # print(f'test: {opt_dist([0, 0, 1, 0, 0, 0, 1, 0, 0, 0], 1)}')  # 1
+    # print(f'test: {opt_dist([0, 0, 1, 0, 0, 0, 1, 0, 0, 0], 0)}')  # 2
+    # print(f'test: {opt_dist([0, 0, 1, 1, 1, 1, 1, 0, 0, 0], 5)}')  # 0
+    # print(f'test: {opt_dist([0, 0, 1, 1, 0, 1, 1, 0, 0, 0], 3)}')  # 3
