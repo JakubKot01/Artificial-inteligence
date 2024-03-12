@@ -23,6 +23,7 @@ import gzip
 import sys
 import time
 
+
 def time_consuming_function(N): 
     d = {} 
     r = [] 
