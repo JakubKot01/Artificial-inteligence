@@ -34,8 +34,8 @@ def split_text(text: str, polish_words_list: set[str], logs_file, offset: str) -
 
     while current_score == 0 and index_set:
 
-        left_score, left_text = split_text(text[:random_index], polish_words_list, logs_file, offset + " X")
-        right_score, right_text = split_text(text[random_index:], polish_words_list, logs_file, offset + " X")
+        left_score, left_text = split_text(text[:random_index], polish_words_list, logs_file, offset + "\t")
+        right_score, right_text = split_text(text[random_index:], polish_words_list, logs_file, offset + "\t")
         new_text = left_text + " " + right_text
         if left_score != 0 and right_score != 0:
             current_score = 1
