@@ -1,5 +1,17 @@
 from itertools import combinations
 
+bcards = []
+fcards = []
+GAMES = 1646701056
+
+for card in range(2, 11):
+    for color in range(0, 4):
+        bcards.append([card, color])
+
+for card in range(0, 4):
+    for color in range(0, 4):
+        fcards.append([card, color])
+
 
 def isRoyalFlush(hand):
     hand.sort()
@@ -106,6 +118,7 @@ def assignPoints(hand):
 
 ###########################################################################
 
+"""
 bcards = []
 fcards = []
 GAMES = 1646701056
@@ -117,6 +130,7 @@ for card in range(2, 11):
 for card in range(0, 4):
     for color in range(0, 4):
         fcards.append([card, color])
+"""
 
 
 if __name__ == '__main__':
