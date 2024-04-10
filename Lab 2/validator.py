@@ -43,6 +43,7 @@ import numpy as np
 
 import time
 
+
 def time_consuming_function(N): 
     d = {} 
     r = [] 
@@ -55,6 +56,7 @@ def time_consuming_function(N):
     res3 = s.find('999999') 
     return res1 and res2 and res3 
 
+
 t0 = time.time()
 r = time_consuming_function(500_000)
 
@@ -62,10 +64,8 @@ VERBOSE = False
 
 TIME_MULTIPLIER = (time.time() - t0) / 0.4
 
-print ('Estimated computer speed=', 1 / TIME_MULTIPLIER)
-TIME_MULTIPLIER *= 1.1 # SAFETY BONUS :)
-
-
+print('Estimated computer speed=', 1 / TIME_MULTIPLIER)
+TIME_MULTIPLIER *= 1.1  # SAFETY BONUS :)
 
 # Tests embedded into the validator.
 

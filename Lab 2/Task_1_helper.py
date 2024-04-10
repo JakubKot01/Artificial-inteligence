@@ -1,36 +1,40 @@
 VERBOSE = False
 
 
-def opt_dist(nums: list[int], goal: int) -> int:
-    results: list[int] = list()
-    if VERBOSE:
-        print(f'{nums}\n')
-    ones_to_change = 0
-    for i in range(len(nums)):
+def opt_dist(nums: list[int], goal: list[int]) -> int:
+    results: list[int] = []
+
+    for start_index in range(len(nums)):
         current_result: int = 0
-        current_goal: int = goal
+        current_goal: list[int] = goal.copy()
         current_nums: list[int] = [0] * len(nums)
+        ones_to_change = 0
 
-        for j in range(i, len(nums)):
+        for i in range(start_index, len(nums)):
+            if nums[i] == 0 and sum(current_goal) > 0:
+                current_result += 1
+                current_nums[i] = 1
+                if len(current_goal) > 1:
+                    current_goal[0] -= 1
+            elif nums[i] == 1 and sum(current_goal) > 0:
+                current_goal[0] -= 1
+                current_nums[i] = 1
+            elif nums[i] == 1 and sum(current_goal) == 0:
+                current_result += 1
+                current_nums[i] = 0
+            elif nums[i] == 0 and sum(current_goal) == 0:
+                current_result += 1
 
-            if nums[j] == 0 and current_goal > current_result:
-                current_result += 1
-                current_nums[j] = 1
-            elif nums[j] == 1 and current_goal > current_result:
-                current_goal -= 1
-                current_nums[j] = 1
-            elif nums[j] == 1 and current_goal <= current_result:
-                current_result += 1
-                current_nums[j] = 0
         current_result += ones_to_change
-        if nums[i] == 1:
-            ones_to_change += 1
-        if VERBOSE:
-            print(current_nums, ones_to_change, current_result, current_goal)
+        ones_to_change += nums[start_index]
 
-        if current_result >= current_goal:
+        if sum(current_goal) == 0:
             results.append(current_result)
-    return min(results)
+
+    if results:
+        return min(results)
+    else:
+        return float('inf')  # Zwróć nieskończoność, jeśli lista wyników jest pusta
 
 
 if __name__ == '__main__':

@@ -2,6 +2,7 @@ import random
 from pprint import pprint
 from Task_1_helper import opt_dist
 
+
 VERBOSE = False
 
 
@@ -177,6 +178,28 @@ def solve(completed_rows, completed_cols, board, number_of_rows, number_of_cols,
     return board
 
 
+def find_all_settings(number_of_elements, descriptions):
+    def generate_configurations(number_of_elements, descriptions, current_configuration, start_position):
+        if not descriptions:
+            if len(current_configuration) == number_of_elements:
+                configurations.append(current_configuration.copy())
+            return
+
+        for block_size in range(descriptions[0], number_of_elements - sum(descriptions[1:]) - len(descriptions) + 1):
+            new_configuration = current_configuration + ['#' * block_size]
+            next_position = start_position + block_size + 1
+            if len(descriptions) > 1:
+                new_configuration.append('.')
+                next_position += 1
+            generate_configurations(number_of_elements, descriptions[1:], new_configuration, next_position)
+
+    configurations = []
+    generate_configurations(number_of_elements, descriptions, [], 0)
+    print("\n\n\n")
+    pprint(configurations)
+    return configurations
+
+
 if __name__ == '__main__':
     input_file_path = "zad1_input.txt"
     output_file_path = "zad1_output.txt"
@@ -190,12 +213,9 @@ if __name__ == '__main__':
     rows_desc = []
     cols_desc = []
     for i in range(number_of_rows):
-        current_line = [int(x) for x in input_file.readline().split()]
-        print(current_line)
-        rows_desc.append(current_line)
+        rows_desc.append([int(x) for x in input_file.readline().strip().split()])
     for i in range(number_of_cols):
-        current_line = [int(x) for x in input_file.readline().split()]
-        cols_desc.append(current_line)
+        cols_desc.append([int(x) for x in input_file.readline().strip().split()])
 
     print(f"rows_desc: {rows_desc}, cols_desc: {cols_desc}")
 
@@ -204,6 +224,13 @@ if __name__ == '__main__':
     completed_rows, completed_cols = update_completion(initial_board, rows_desc, cols_desc, number_of_rows,
                                                        number_of_cols)
 
+    rows_combinations = [[]] * number_of_rows
+    cols_combinations = [[]] * number_of_cols
+
+    for counter, row_desc in enumerate(rows_desc):
+        rows_combinations[counter] = find_all_settings(number_of_cols, row_desc)
+
+    """
     print(f"Completed rows: {completed_rows}, completed cols: {completed_cols}")
 
     solution_board = solve(completed_rows, completed_cols, initial_board, number_of_rows, number_of_cols,
@@ -213,3 +240,4 @@ if __name__ == '__main__':
 
     for row in solution_board:
         output_file.write(''.join(['#' if cell == 1 else '.' for cell in row]) + '\n')
+    """
