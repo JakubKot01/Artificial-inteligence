@@ -5,6 +5,7 @@ from Task_1_helper import opt_dist
 
 VERBOSE = False
 
+
 class Setting:
     def __init__(self, elements, breaks):
         self.elements = elements
@@ -41,17 +42,17 @@ def find_all_settings(number_of_elements, descriptions):
         print("\n", cut_items, "\n")
         current_table = table[:-cut_items].copy()
         for break_number, add_index in enumerate(breaks_indexes):
-            for i in range(cut_items):
+            for i in range(1, cut_items + 1):
                 current_add_table = current_table.copy()
                 current_add_table.insert(add_index, ".")
-                for j in range(cut_items):
+                for j in range(1, cut_items + 1):
                     current_added_items = i + j
-                    print(current_added_items, end=" ")
-                    for k in range(break_number + 1, len(breaks_indexes)):
+                    print(current_added_items, end="\t\t")
+                    for k in range(break_number, len(breaks_indexes)):
                         if cut_items - current_added_items > 0:
-                            print(f'adding in : {breaks_indexes[k] + current_added_items}')
+                            # print(f'adding in {breaks_indexes[k] + current_added_items}', end=", ")
                             current_add_table.insert(breaks_indexes[k] + current_added_items, ".")
-                print(current_add_table)
+                print('\n', current_add_table)
                 result.append(current_add_table)
 
     print("\n\n\n")

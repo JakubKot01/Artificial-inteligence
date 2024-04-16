@@ -133,4 +133,18 @@ def make_test(n, figurantCards, blotkarzCards):
 
 
 F, B = allCards()
-make_test(1000000, F, B)
+# make_test(1000000, F, B)
+
+
+def find_best():
+    figurantCards = [11, 12, 13, 14]
+    blotkarzCards = [2, 3, 4]
+
+    fc = [(i, j) for i in figurantCards for j in range(1, 5)]
+    bc = [(i, j) for i in blotkarzCards for j in range(1, 5)]
+
+    make_test(100000, fc, bc)
+    print(f'Talia blotkarza o długości {len(bc)} to: {bc}')
+
+
+find_best()
