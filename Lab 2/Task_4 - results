@@ -1,0 +1,19 @@
+epsilon: 0.0:
+Validation result: 21/21 cases pass.
+For passing cases total num_moves: 526
+For passing cases total time: 26.84796953201294
+
+epsilon: 0.2:
+Validation result: 14/21 cases pass.
+For passing cases total num_moves: 291
+For passing cases total time: 13.996471881866455
+
+epsilon: 0.1:
+Validation result: 20/21 cases pass.
+For passing cases total num_moves: 505
+For passing cases total time: 20.26562809944153
+
+epsilon: 0.09
+Validation result: 21/21 cases pass.
+For passing cases total num_moves: 526
+For passing cases total time: 18.688587427139282

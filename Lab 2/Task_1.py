@@ -1,103 +1,243 @@
 import random
 from pprint import pprint
-from Task_1_helper import opt_dist
-
+from itertools import permutations
+from queue import Queue
 
 VERBOSE = False
 
+WHITE = "."
+BLACK = "#"
+BOARD = []
+QUEUE = Queue()
 
-class Setting:
-    def __init__(self, elements, breaks):
-        self.elements = elements
-        self.breaks = breaks
+
+class Block:
+    def __init__(self, value, length):
+        self.value = value
+        self.length = length
 
 
-def find_all_settings(number_of_elements, descriptions):
+def check_order(original, permutated):
+    original_order = []
+    permutated_order = []
+
+    for element in original:
+        if element.value == "#":
+            original_order.append(element.length)
+
+    for element in permutated:
+        if element.value == "#":
+            permutated_order.append(element.length)
+
+    return original_order == permutated_order
+
+
+def generate_permutations(original):
+    print("TEST DUPA 1")
+    perm = permutations(original)
+
+    print("TEST DUPA 2")
+
+    filtered_permutations = []
+
+    for p in perm:
+        print(p)
+        valid = True
+        for i in range(len(p) - 1):
+            if p[i].value == '#' and p[i + 1].value == '#':
+                valid = False
+                break
+        if valid:
+            if check_order(original, p):
+                filtered_permutations.append(p)
+
+    return filtered_permutations
+
+
+def prepare_setting(permutation):
     result = []
-    number_of_blocks = len(descriptions)
-    number_of_breaks = len(descriptions) - 1
-    summary_number_of_filled_fields = 0
-    index = 0
-    table = []
-    breaks_indexes = [0]
-    for counter in range(number_of_breaks + number_of_blocks):
-        if counter % 2 == 0:
-            for i in range(descriptions[counter // 2]):
-                summary_number_of_filled_fields += 1
-                table.append("#")
-                index += 1
-        else:
-            breaks_indexes.append(index)
-            table.append(".")
-            index += 1
-
-    result.append(table)
-
-    number_of_left_fields = number_of_elements - (summary_number_of_filled_fields + number_of_breaks)
-    if number_of_left_fields != 0:
-        for i in range(number_of_left_fields):
-            table.append(".")
-
-    for cut_items in range(1, number_of_left_fields + 1):
-        print("\n", cut_items, "\n")
-        current_table = table[:-cut_items].copy()
-        for break_number, add_index in enumerate(breaks_indexes):
-            for i in range(1, cut_items + 1):
-                current_add_table = current_table.copy()
-                current_add_table.insert(add_index, ".")
-                for j in range(1, cut_items + 1):
-                    current_added_items = i + j
-                    print(current_added_items, end="\t\t")
-                    for k in range(break_number, len(breaks_indexes)):
-                        if cut_items - current_added_items > 0:
-                            # print(f'adding in {breaks_indexes[k] + current_added_items}', end=", ")
-                            current_add_table.insert(breaks_indexes[k] + current_added_items, ".")
-                print('\n', current_add_table)
-                result.append(current_add_table)
-
-    print("\n\n\n")
-    for table in result:
-        print(table)
+    for element in permutation:
+        for _ in range(element.length):
+            result.append(element.value)
     return result
 
 
+def find_all_settings(number_of_elements, descriptions):
+    print(number_of_elements, descriptions)
+    all_settings = []
+    basic_setting = []
+    number_of_active_blocks = len(descriptions)
+    number_of_break_blocks = number_of_active_blocks - 1
+    number_of_blocks = number_of_active_blocks + number_of_break_blocks
+    filled_fields = 0
+    for counter in range(number_of_blocks):
+        if counter % 2 == 0:
+            basic_setting.append(Block("#", descriptions[counter // 2]))
+            filled_fields += descriptions[counter // 2]
+        else:
+            basic_setting.append(Block(".", 1))
+            filled_fields += 1
+
+    number_of_left_fields = number_of_elements - filled_fields
+    for counter in range(number_of_left_fields):
+        basic_setting.append(Block(".", 1))
+
+    print("TEST1")
+
+    all_settings.append(prepare_setting(basic_setting))
+
+    print("TEST2")
+
+    permutations_list = generate_permutations(basic_setting.copy())
+
+    print("TEST3")
+
+    for permutation in permutations_list:
+        print(permutation)
+        setting = prepare_setting(permutation)
+        if setting not in all_settings:
+            all_settings.append(setting)
+
+    for setting in all_settings:
+        print(setting)
+
+    return all_settings
+
+
+def deduce_row(row, possible_rows, m):
+    global BOARD, QUEUE
+
+    possibilities = possible_rows[row]
+    new_possibilities = possibilities.copy()
+
+    board_row = BOARD[row]
+    for i in range(m):
+        if board_row[i] != 0:
+            for j in range(len(possibilities)):
+                # usuwamy błędne możliwości
+                if possibilities[j][i] != board_row[i] and possibilities[j] in new_possibilities:
+                    new_possibilities.remove(possibilities[j])
+
+    possible_rows[row] = new_possibilities
+
+    for i in range(m):
+        white = 0
+        black = 0
+        for poss in new_possibilities:
+            if poss[i] == WHITE:
+                white += 1
+            elif poss[i] == BLACK:
+                black += 1
+
+        # pole musi być czarne
+        if BOARD[row][i] == 0 and black == len(new_possibilities):
+            BOARD[row][i] = BLACK
+            QUEUE.put(('row', i))
+
+        # pole musi być białe
+        if BOARD[row][i] == 0 and white == len(new_possibilities):
+            BOARD[row][i] = WHITE
+            QUEUE.put(('row', i))
+
+    return possible_rows
+
+
+def get_column(col):
+    return [row[col] for row in BOARD]
+
+
+def deduce_col(col, possible_cols, n):
+    global BOARD, QUEUE
+
+    possibilities = possible_cols[col]
+    new_possibilities = possibilities.copy()
+
+    board_column = get_column(col)
+    for i in range(n):
+        if board_column[i] != 0:
+            for j in range(len(possibilities)):
+                # usuwamy błędne możliwości
+                if possibilities[j][i] != board_column[i] and possibilities[j] in new_possibilities:
+                    new_possibilities.remove(possibilities[j])
+
+    possible_cols[col] = new_possibilities
+
+    for i in range(n):
+        white = 0
+        black = 0
+        for poss in new_possibilities:
+            if poss[i] == WHITE:
+                white += 1
+            if poss[i] == BLACK:
+                black += 1
+
+        # pole musi być czarne
+        if BOARD[i][col] == 0 and black == len(new_possibilities):
+            BOARD[i][col] = BLACK
+            QUEUE.put(('col', i))
+
+        # pole musi byc białe
+        if BOARD[i][col] == 0 and white == len(new_possibilities):
+            BOARD[i][col] = WHITE
+            QUEUE.put(('col', i))
+
+    return possible_cols
+
+
+def print_board(n, m):
+    res = ""
+    for i in range(n):
+        for j in range(m):
+            if BOARD[i][j] == BLACK:
+                res += '#'
+            else:
+                res += '.'
+        res += "\n"
+
+    return res
+
+
+def solve(rows, cols, n, m):
+    global BOARD, QUEUE
+    BOARD = [[0] * m for _ in range(n)]
+
+    print(rows)
+
+    # wszystkie możliwe ustawienia klocków dla rzędów i kolumn
+    possible_rows = [find_all_settings(m, filling) for filling in rows]
+    pprint(possible_rows)
+    possible_cols = [find_all_settings(n, filling) for filling in cols]
+    pprint(possible_cols)
+
+    QUEUE = Queue()
+    for i in range(n):
+        QUEUE.put(('col', i))  # i-ta kolumna
+    for j in range(m):
+        QUEUE.put(('row', j))  # j-ty wiersz
+
+    while not QUEUE.empty():
+        (what, i) = QUEUE.get()
+
+        if what == 'row':
+            possible_cols = deduce_col(i, possible_cols, n)
+        elif what == 'col':
+            possible_rows = deduce_row(i, possible_rows, m)
+
+    return print_board(n, m)
+
+
 if __name__ == '__main__':
-    input_file_path = "zad1_input.txt"
-    output_file_path = "zad1_output.txt"
-    input_file = open(input_file_path, 'r', encoding='utf-8')
-    output_file = open(output_file_path, 'w', encoding='utf-8')
+    n, m = -1, -1
+    desc = []
+    rows = []
+    columns = []
+    with open('zad1_input.txt', 'r') as input:
+        input = input.readlines()
+        n, m = [int(x) for x in input[0].split()]
+        desc = [[int(x) for x in line.split()] for line in input[1:]]
 
-    first_line = input_file.readline().split()
-    number_of_rows = int(first_line[0])
-    number_of_cols = int(first_line[1])
+    rows = desc[:n]
+    columns = desc[n:]
 
-    rows_desc = []
-    cols_desc = []
-    for i in range(number_of_rows):
-        rows_desc.append([int(x) for x in input_file.readline().strip().split()])
-    for i in range(number_of_cols):
-        cols_desc.append([int(x) for x in input_file.readline().strip().split()])
-
-    print(f"rows_desc: {rows_desc}, cols_desc: {cols_desc}")
-
-    initial_board = [[0] * number_of_cols for _ in range(number_of_rows)]
-
-    rows_combinations = [[]] * number_of_rows
-    cols_combinations = [[]] * number_of_cols
-
-    rows_combinations[4] = find_all_settings(number_of_cols, rows_desc[4])
-
-    # for counter, row_desc in enumerate(rows_desc):
-    #     rows_combinations[counter] = find_all_settings(number_of_cols, row_desc)
-
-    """
-    print(f"Completed rows: {completed_rows}, completed cols: {completed_cols}")
-
-    solution_board = solve(completed_rows, completed_cols, initial_board, number_of_rows, number_of_cols,
-                           rows_desc, cols_desc)
-
-    pprint(solution_board)
-
-    for row in solution_board:
-        output_file.write(''.join(['#' if cell == 1 else '.' for cell in row]) + '\n')
-    """
+    with open('zad1_output.txt', 'w') as output:
+        output.write(solve(rows, columns, n, m))
