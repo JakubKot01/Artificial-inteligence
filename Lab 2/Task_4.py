@@ -96,7 +96,7 @@ def heuristic(positions, epsilon):
 def A_star(positions, epsilon):
     global MAP, GOALS
 
-    heap = []  # (wartość_heurystyki, pozycje, ścieżka)
+    heap = []  # (heuristic value, positions, path)
     visited = set(tuple(positions))
 
     heappush(heap, (heuristic(positions, epsilon), positions, ''))

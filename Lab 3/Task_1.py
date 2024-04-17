@@ -18,11 +18,11 @@ def generate_possibilities(setting, n):
     if sum(setting) + len(setting) - 1 < n:
         result += [[WHITE] + remainder for remainder in generate_possibilities(setting, n - 1)]
 
-    # first block
+    # First block
     block_of_ones = [BLACK for _ in range(setting[0])]
     new_n = n - setting[0]
 
-    # if have more than one block - add white space
+    # If more than one block - add white space
     if len(setting) > 1:
         block_of_ones += [WHITE]
         new_n -= 1
@@ -158,7 +158,7 @@ if __name__ == '__main__':
     desc = []
     rows = []
     columns = []
-    with open('zad1_input.txt', 'r') as input:
+    with open('zad_input.txt', 'r') as input:
         input = input.readlines()
         n, m = [int(x) for x in input[0].split()]
         desc = [[int(x) for x in line.split()] for line in input[1:]]
@@ -166,5 +166,5 @@ if __name__ == '__main__':
     rows = desc[:n]
     columns = desc[n:]
 
-    with open('zad1_output.txt', 'w') as output:
+    with open('zad_output.txt', 'w') as output:
         output.write(solve(rows, columns, n, m))
