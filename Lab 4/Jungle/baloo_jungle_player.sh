@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python3 baloo.py
+python3 Jungle/baloo.py
