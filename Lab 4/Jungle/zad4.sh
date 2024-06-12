@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python3 Jungle/zad4.py
+pypy3 Jungle/zad4.py

@@ -2,8 +2,10 @@ import random
 import sys
 from copy import deepcopy
 
+
 class WrongMove(Exception):
     pass
+
 
 class Jungle:
     PIECE_VALUES = {
@@ -35,9 +37,9 @@ class Jungle:
             for x in range(Jungle.MX):
                 C = self.board[y][x]
                 if C:
-                    pl, pc = C
-                    self.pieces[pl][pc] = (x, y)
-        self.curplayer = 0
+                    player, figure_index = C
+                    self.pieces[player][figure_index] = (x, y)
+        self.current_player = 0
         self.peace_counter = 0
         self.winner = None
 
@@ -55,6 +57,7 @@ class Jungle:
         """
 
         B = [x.strip() for x in pieces.split() if len(x) > 0]
+        # Disctionary mapping figures letters on indexes
         T = dict(zip('rcdwjtle', range(8)))
 
         res = []
@@ -67,6 +70,7 @@ class Jungle:
                         player = 1
                     else:
                         player = 0
+                    # Tuple: (player number, figure index from T)
                     raw[x] = (player, T[c.lower()])
             res.append(raw)
         return res
@@ -119,39 +123,22 @@ class Jungle:
                     return True
         return False
 
-    def draw(self):
-        TT = {0: 'rcdwjtle', 1: 'RCDWJTLE'}
-        for y in range(Jungle.MY):
-
-            L = []
-            for x in range(Jungle.MX):
-                b = self.board[y][x]
-                if b:
-                    pl, pc = b
-                    L.append(TT[pl][pc])
-                else:
-                    L.append('.')
-            print(''.join(L))
-        print('')
-
     def moves(self, player):
         res = []
-        for p, pos in self.pieces[player].items():
+        for pawn, pos in self.pieces[player].items():
             x, y = pos
             for (dx, dy) in Jungle.dirs:
                 pos2 = (nx, ny) = (x+dx, y+dy)
                 if 0 <= nx < Jungle.MX and 0 <= ny < Jungle.MY:
-                    # nie możemy wejść do własnej jamy
+                    # cannot get to your own den
                     if Jungle.dens[player] == pos2:
                         continue
                     if pos2 in self.ponds:
-                        # tylko szczur może być w wodzie
-                        # lew i tygrys przeskakują nad wodą
-                        if p not in (Jungle.rat, Jungle.tiger, Jungle.lion):
+                        # only rat can stay in the pond
+                        # lion and tiget jump over the pond
+                        if pawn not in (Jungle.rat, Jungle.tiger, Jungle.lion):
                             continue
-                        #if self.board[ny][nx] is not None:
-                        #    continue  # WHY??
-                        if p == Jungle.tiger or p == Jungle.lion:
+                        if pawn == Jungle.tiger or pawn == Jungle.lion:
                             if dx != 0:
                                 dx *= 3
                             if dy != 0:
@@ -160,21 +147,21 @@ class Jungle:
                                 continue
                             pos2 = (nx, ny) = (x+dx, y+dy)
                     if self.board[ny][nx] is not None:
-                        pl2, piece2 = self.board[ny][nx]
-                        if pl2 == player:
+                        player2, pawn2 = self.board[ny][nx]
+                        if player2 == player:
                             continue
-                        if not self.can_beat(p, piece2, pos, pos2):
+                        if not self.can_beat(pawn, pawn2, pos, pos2):
                             continue
                     res.append((pos, pos2))
         return res
 
     def victory(self, player):
-        oponent = 1-player        
-        if len(self.pieces[oponent]) == 0:
+        opponent = 1-player        
+        if len(self.pieces[opponent]) == 0:
             self.winner = player
             return True
 
-        x, y = self.dens[oponent]
+        x, y = self.dens[opponent]
         if self.board[y][x]:
             self.winner = player
             return True
@@ -189,7 +176,7 @@ class Jungle:
         return False
 
     def do_move(self, m):
-        self.curplayer = 1 - self.curplayer
+        self.current_player = 1 - self.current_player
         if m is None:
             return
         pos1, pos2 = m
@@ -220,23 +207,23 @@ class Jungle:
     def run_simulation(self, move, player, number_of_moves):
         saved_board = deepcopy(self.board)
         saved_pieces = deepcopy(self.pieces)
-        saved_player = self.curplayer
+        saved_player = self.current_player
         saved_peace_counter = self.peace_counter
         winner = None
 
         self.do_move(move)
         for i in range(number_of_moves):
-            if self.victory(1 - self.curplayer):
+            if self.victory(1 - self.current_player):
                 winner = self.winner
                 break
-            move = self.random_move(self.curplayer)
+            move = self.random_move(self.current_player)
             self.do_move(move)
 
         result = self.result(player)
 
         self.board = saved_board
         self.pieces = saved_pieces
-        self.curplayer = saved_player
+        self.current_player = saved_player
         self.peace_counter = saved_peace_counter
 
         if winner is not None:
@@ -307,11 +294,11 @@ class Player(object):
             if moves:
                 move = self.game.best_move(self.my_player)
                 self.game.do_move(move)
-                move = (move[0][0], move[0][1], move[1][0], move[1][1])
+                choosen_move = (move[0][0], move[0][1], move[1][0], move[1][1])
             else:
                 self.game.do_move(None)
-                move = (-1, -1, -1, -1)
-            self.say('IDO %d %d %d %d' % move)
+                choosen_move = (-1, -1, -1, -1)
+            self.say('IDO %d %d %d %d' % choosen_move)
 
 
 if __name__ == '__main__':

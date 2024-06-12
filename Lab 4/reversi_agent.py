@@ -173,7 +173,7 @@ class AI:
         return len(stableFields)
 
     def heuristic(self):
-        # TODO: poprawić
+        # TODO: improve
         h = 0
         h += self.score(self.board.board, self.__priority)
 
@@ -207,6 +207,8 @@ class AI:
             if score > bestScore[0]:
                 bestScore = (score, x, y)
 
+            self.board.turn = self.color
+
         self.board.placeDiscAt(bestScore[1], bestScore[2])
 
 
@@ -221,10 +223,11 @@ def playGame(agent1, agent2):
         board.movesMade += 1
         if black.move() == False:
             board.movesMade -= 1
-            break
         board.movesMade += 1
         if white.move() == False:
             board.movesMade -= 1
+        if black.move() == False and white.move() == False:
+            break
 
     (whiteScore, blackScore) = board.boardScore()
     if whiteScore > blackScore:
