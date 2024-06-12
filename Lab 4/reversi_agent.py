@@ -24,7 +24,7 @@ class Board:
         self.movesMade = 0
 
     def boardScore(self):
-        return len(self.whitePieces), len(self.blackPieces)
+        return (len(self.whitePieces), len(self.blackPieces))
 
     def isInBounds(self, row, col):
         return row < 8 and row > -1 and col < 8 and col > -1
@@ -38,13 +38,13 @@ class Board:
         return (pos for pos in pieces)
 
     def hasDirValidPlacement(self, row, col, x, y):
-        # Looking for position in (x, y) direction we can put a figure
-        # If so - return the position
-        while self.isInBounds(row + x, col + y) and self.board[row + x][col + y] == OPPONENT_PIECE_COLOR[self.turn]:
+        # sprawdzamy, czy gdzieś w kierunku (x, y) możemy postawić pionka
+        # jeśli tak, to zwracamy znalezioną pozycję
+        while (self.isInBounds(row + x, col + y) and self.board[row + x][col + y] == OPPONENT_PIECE_COLOR[self.turn]):
             row += x
             col += y
-            if self.isInBounds(row + x, col + y) and self.board[row + x][col + y] == UNOCCUPIED:
-                return row + x, col + y
+            if (self.isInBounds(row + x, col + y) and self.board[row + x][col + y] == UNOCCUPIED):
+                return (row + x, col + y)
         return False
 
     def allPossibleMoves(self):
@@ -52,16 +52,14 @@ class Board:
         for (r, c) in self.getPiecesPositions(OPPONENT_PIECE_COLOR[self.turn]):
             for (x, y) in DIRS:
                 move = self.hasDirValidPlacement(r, c, x, y)
-                # if move != False:
-                if move:
+                if move != False:
                     moves.add(move)
         return list(moves)
 
     def placeDiscAt(self, row, col):
         winningPieces = set()
         loosingPieces = set()
-
-        if self.turn == WHITE:
+        if (self.turn == WHITE):
             winningPieces = self.whitePieces
             loosingPieces = self.blackPieces
         else:
@@ -72,27 +70,27 @@ class Board:
         self.board[row][col] = self.turn
 
         piecesToFlip = set()
-        # Looking for captured pawns
+        # szukamy zdobytych pionków
         for (x, y) in DIRS:
             current = set()
             next_x = row + x
             next_y = col + y
-            while self.isInBounds(next_x, next_y) and self.board[next_x][next_y] == OPPONENT_PIECE_COLOR[self.turn]:
+            while (self.isInBounds(next_x, next_y) and self.board[next_x][next_y] == OPPONENT_PIECE_COLOR[self.turn]):
                 current.add((next_x, next_y))
                 next_x += x
                 next_y += y
-                if self.isInBounds(next_x, next_y) and self.board[next_x][next_y] == self.turn:
+                if (self.isInBounds(next_x, next_y) and self.board[next_x][next_y] == self.turn):
                     for pos in current:
                         piecesToFlip.add(pos)
                     break
 
-        # collecting captured pawns
+        # zabieramy zdobyte pionki
         for pos in piecesToFlip:
             self.board[pos[0]][pos[1]] = self.turn
             winningPieces.add(pos)
             loosingPieces.remove(pos)
 
-        # opponent's turn
+        # tura przeciwnika
         self.turn = OPPONENT_PIECE_COLOR[self.turn]
 
     def copy(self):
@@ -114,7 +112,7 @@ class RandomPlayer:
 
     def move(self):
         moves = self.board.allPossibleMoves()
-        if len(moves) == 0:
+        if (len(moves) == 0):
             return False
         randomID = random.randint(0, len(moves) - 1)
         randomMove = moves[randomID]
@@ -140,14 +138,14 @@ class AI:
         score = 0
         for row in range(8):
             for col in range(8):
-                if board[row][col] == self.color:
+                if (board[row][col] == self.color):
                     score += priorities[row][col]
-                if board[row][col] == OPPONENT_PIECE_COLOR[self.color]:
+                if (board[row][col] == OPPONENT_PIECE_COLOR[self.color]):
                     score -= priorities[row][col]
         return score
 
     def stability(self, color):
-        def directionStability(pos, pieces, x, y):
+        def directionStabilitiy(pos, pieces, x, y):
             res = set()
             if pos in pieces:
                 res.add(pos)
@@ -159,22 +157,22 @@ class AI:
         pieces = self.board.getPiecesPositions(color)
         stableFields = set()
 
-        # left top
-        stableFields.update(directionStability((0, 0), pieces, 0, 1))
-        stableFields.update(directionStability((0, 0), pieces, 1, 0))
-        # left bottom
-        stableFields.update(directionStability((7, 0), pieces, -1, 0))
-        stableFields.update(directionStability((7, 0), pieces, 0, 1))
-        # right top
-        stableFields.update(directionStability((0, 7), pieces, 1, 0))
-        stableFields.update(directionStability((0, 7), pieces, 0, -1))
-        # right bottom
-        stableFields.update(directionStability((7, 7), pieces, -1, 0))
-        stableFields.update(directionStability((7, 7), pieces, 0, -1))
+        # lewy górny
+        stableFields.update(directionStabilitiy((0, 0), pieces, 0, 1))
+        stableFields.update(directionStabilitiy((0, 0), pieces, 1, 0))
+        # lewy dolny
+        stableFields.update(directionStabilitiy((7, 0), pieces, -1, 0))
+        stableFields.update(directionStabilitiy((7, 0), pieces, 0, 1))
+        # prawy górny
+        stableFields.update(directionStabilitiy((0, 7), pieces, 1, 0))
+        stableFields.update(directionStabilitiy((0, 7), pieces, 0, -1))
+        # prawy dolny
+        stableFields.update(directionStabilitiy((7, 7), pieces, -1, 0))
+        stableFields.update(directionStabilitiy((7, 7), pieces, 0, -1))
 
         return len(stableFields)
 
-    def heuristic(self):
+    def heura(self):
         # TODO: poprawić
         h = 0
         h += self.score(self.board.board, self.__priority)
@@ -192,7 +190,7 @@ class AI:
 
     def move(self):
         moves = self.board.allPossibleMoves()
-        if len(moves) == 0:
+        if (len(moves) == 0):
             return False
 
         bestScore = (float('-inf'), 0, 0)
@@ -202,11 +200,11 @@ class AI:
             self.board.placeDiscAt(x, y)
             self.board.turn = OPPONENT_PIECE_COLOR[self.board.turn]
 
-            score = self.heuristic()
+            score = self.heura()
 
             self.board = board2
 
-            if score > bestScore[0]:
+            if (score > bestScore[0]):
                 bestScore = (score, x, y)
 
         self.board.placeDiscAt(bestScore[1], bestScore[2])
@@ -219,21 +217,19 @@ def playGame(agent1, agent2):
     white = agent1(WHITE, board)
     black = agent2(BLACK, board)
 
-    while True:
+    while (True):
         board.movesMade += 1
-        if not black.move():
-        # if black.move() == False:
+        if (black.move() == False):
             board.movesMade -= 1
             break
         board.movesMade += 1
-        if not white.move():
-        # if white.move() == False:
+        if (white.move() == False):
             board.movesMade -= 1
 
     (whiteScore, blackScore) = board.boardScore()
-    if whiteScore > blackScore:
+    if (whiteScore > blackScore):
         return 'WHITE'
-    elif whiteScore < blackScore:
+    elif (whiteScore < blackScore):
         return 'BLACK'
     else:
         return 'DRAW'
