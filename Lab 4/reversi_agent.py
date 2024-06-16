@@ -173,16 +173,15 @@ class AI:
         return len(stableFields)
 
     def heuristic(self):
-        # TODO: improve
         h = 0
         h += self.score(self.board.board, self.__priority)
 
         (w, b) = self.board.boardScore()
         if self.board.movesMade > 50:
             if self.color == WHITE:
-                h += 3 * (w - b)
+                h += 10 * (w - b)
             else:
-                h += 3 * (b - w)
+                h += 10 * (b - w)
 
         h += 30 * (self.stability(self.color) - self.stability(OPPONENT_PIECE_COLOR[self.color]))
 
