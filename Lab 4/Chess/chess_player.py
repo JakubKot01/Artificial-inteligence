@@ -384,6 +384,6 @@ class AI:
             self.say('IDO ' + str(move))
 
 if __name__ == '__main__':
-    with chess.polyglot.open_reader('baron30.bin') as reader:
+    with chess.polyglot.open_reader('Chess/baron30.bin') as reader:
         agent = AI()
         agent.loop()

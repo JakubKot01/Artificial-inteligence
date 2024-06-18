@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python3 mr_sheibel.py
+python3 Chess/mr_sheibel.py
