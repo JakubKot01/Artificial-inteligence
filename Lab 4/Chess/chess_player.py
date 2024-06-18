@@ -216,9 +216,9 @@ class AI:
         return c1 - c2
 
     def AlphaBetaSearch(self, depth, maximizing_player, alpha, beta, pawn_captured):
-        if self.board.fullmove_number > 40:
+        if len(self.board.piece_map()) <= 7:
             if self.board.is_valid() and not self.board.is_game_over():
-                with chess.syzygy.open_tablebase("data/syzygy/regular") as tablebase:
+                with chess.syzygy.open_tablebase("syzygy") as tablebase:
                     with tablebase.probe_wdl(self.board) as result:
                         if result:
                             score = result.value()
