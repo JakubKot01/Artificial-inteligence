@@ -2,6 +2,7 @@ from functools import cmp_to_key
 import chess
 import sys
 import chess.polyglot
+import chess.syzygy
 
 PAWN_WHITE = [
     0,   0,   0,   0,   0,   0,   0,   0,
@@ -157,14 +158,12 @@ class AI:
             self.current_board_evaluation += factor * PST[piece.piece_type-1][piece.color][square]
             return
         
-        #TODO: add king in middle/end game
         if piece.color:
             self.current_board_evaluation += factor * KING_WHITE[square]
         else:
             self.current_board_evaluation += factor * KING_BLACK[square]
 
-    def get_best_move(self):
-        #TODO: dodać ograniczenie czasowe do ABS
+    def get_best_move(self):     
         score, move = self.AlphaBetaSearch(self.depth, self.color, -float('inf'), float('inf'), False)
         return move
 
@@ -191,7 +190,7 @@ class AI:
         return score
 
 
-    def heura(self):
+    def heuristic(self):
         #TODO: dodać: strukture pionów, bicie, itp
         return self.current_board_evaluation + self.mobility()
     
@@ -217,6 +216,13 @@ class AI:
         return c1 - c2
 
     def AlphaBetaSearch(self, depth, maximizing_player, alpha, beta, pawn_captured):
+        if self.board.fullmove_number > 40:
+            if self.board.is_valid() and not self.board.is_game_over():
+                with chess.syzygy.open_tablebase("data/syzygy/regular") as tablebase:
+                    with tablebase.probe_wdl(self.board) as result:
+                        if result:
+                            score = result.value()
+                            return score, None
         #TODO: outcome(claim_draw=True) po 40 ruchach?
         outcome = self.board.outcome()
         if outcome is not None:
@@ -228,10 +234,7 @@ class AI:
             return -float('inf'), None
 
         if depth == 0:
-            # if pawn_captured or self.board.is_check():
-            #     print("quick_search!", file=sys.stderr)
-            #     return self.quick_search(2, maximizing_player, alpha, beta)
-            return self.heura(), None
+            return self.heuristic(), None
         
         moves = list(self.board.legal_moves)
         moves.sort(key=cmp_to_key(self.move_ordering), reverse=True)
@@ -294,11 +297,11 @@ class AI:
             return -float('inf'), None
         
         if depth == 0:
-            return self.heura(), None
+            return self.heuristic(), None
         
         moves = [x for x in self.board.legal_moves if self.board.is_capture(x) or self.board.is_check()]
         if not moves:
-            return self.heura(), None
+            return self.heuristic(), None
         
         moves.sort(key=cmp_to_key(self.move_ordering), reverse=True)
         best_move = moves[0]
@@ -376,14 +379,19 @@ class AI:
                 assert cmd == 'UGO'
                 self.color = 1
             try:
-                entry = reader.choice(agent.board)
+                entry = reader_titans.choice(agent.board)
                 move = entry.move
-            except IndexError:                
-                move = agent.get_best_move()
+            except IndexError: 
+                try:
+                    entry = reader_baron30.choice(agent.board)
+                    move = entry.move     
+                except IndexError:           
+                    move = agent.get_best_move()
             self.make_move(move)
             self.say('IDO ' + str(move))
 
 if __name__ == '__main__':
-    with chess.polyglot.open_reader('Chess/baron30.bin') as reader:
-        agent = AI()
-        agent.loop()
+    with chess.polyglot.open_reader('Chess/Titans.bin') as reader_titans:
+        with chess.polyglot.open_reader('Chess/baron30.bin') as reader_baron30:
+            agent = AI()
+            agent.loop()
