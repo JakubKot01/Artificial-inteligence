@@ -191,7 +191,6 @@ class AI:
 
 
     def heuristic(self):
-        #TODO: dodać: strukture pionów, bicie, itp
         return self.current_board_evaluation + self.mobility()
     
     def move_ordering(self, move1, move2):
@@ -219,11 +218,13 @@ class AI:
         if len(self.board.piece_map()) <= 7:
             if self.board.is_valid() and not self.board.is_game_over():
                 with chess.syzygy.open_tablebase("syzygy") as tablebase:
-                    with tablebase.probe_wdl(self.board) as result:
-                        if result:
-                            score = result.value()
-                            return score, None
-        #TODO: outcome(claim_draw=True) po 40 ruchach?
+                    try:
+                        with tablebase.probe_wdl(self.board) as result:
+                            if result:
+                                score = result.value()
+                                return score, None
+                    except:
+                        pass
         outcome = self.board.outcome()
         if outcome is not None:
             result = outcome.winner
@@ -270,70 +271,6 @@ class AI:
                 self.make_move(move)
 
                 child_score, _ = self.AlphaBetaSearch(depth-1, True, alpha, beta, pawn_captured)
-
-                # undo move
-                self.board.pop()
-                self.current_board_evaluation = saved_eval
-                self.strong_pieces_count = saved_count
-
-                if child_score < best_score:
-                    best_score = child_score
-                    best_move = move
-                    beta = min(beta, best_score)
-                
-                if best_score <= alpha:
-                    break
-        
-        return best_score, best_move
-
-    def quick_search(self, depth, maximizing_player, alpha, beta):
-        outcome = self.board.outcome()
-        if outcome is not None:
-            result = outcome.winner
-            if result is None:
-                return 0, None
-            if result:
-                return float('inf'), None
-            return -float('inf'), None
-        
-        if depth == 0:
-            return self.heuristic(), None
-        
-        moves = [x for x in self.board.legal_moves if self.board.is_capture(x) or self.board.is_check()]
-        if not moves:
-            return self.heuristic(), None
-        
-        moves.sort(key=cmp_to_key(self.move_ordering), reverse=True)
-        best_move = moves[0]
-
-        if maximizing_player:
-            best_score = -float('inf')
-            for move in moves:
-                saved_eval, saved_count = self.current_board_evaluation, self.strong_pieces_count
-                self.make_move(move)
-
-                child_score, _ = self.quick_search(depth-1, False, alpha, beta)
-
-                # undo move
-                self.board.pop()
-                self.current_board_evaluation = saved_eval
-                self.strong_pieces_count = saved_count
-
-                if child_score > best_score:
-                    best_score = child_score
-                    best_move = move
-                    alpha = max(alpha, best_score)
-                
-                if best_score >= beta:
-                    break
-
-        else: # minimizing_player
-            best_score = float('inf')
-            for move in moves:
-                saved_eval, saved_count = self.current_board_evaluation, self.strong_pieces_count
-                self.make_move(move)
-
-                child_score, _ = self.quick_search(depth-1, True, alpha, beta)
 
                 # undo move
                 self.board.pop()
