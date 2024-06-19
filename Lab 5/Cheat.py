@@ -1,3 +1,43 @@
+"""
+Gracze:
+    - Losowy:
+        - Pamięć:
+            - Brak
+        - Ruch:
+            Bierze losową kartę z ręki, jeśli może ją zadeklarować - robi to, w przeciwnym wypadku - deklaruje ostatnią zadeklarowaną wartość
+        - Sprawdzanie:
+            - Sprawdza zawsze gdy przeciwnik pozbędzie się wszystkich kart
+            - Sprawdza z prawdopodobieństwem x
+    - Początkujący:
+        - Pamięć:
+            - Brak
+        - Ruch:
+            - Jeśli może - losuje kartę o dozwolonej wartości i wyrzuca wszystkie o tej samej wartości
+            - Jeśli nie ma takiej karty - bierze losową kartę i deklaruje kartę o losowej dozwolonej wartości
+        - Sprawdzanie:
+            - Sprawdza zawsze gdy przeciwnik może wygrać
+            - Sprawdza jeśli karty w ręce ewidetnie wskazują na oszustwo
+    - Naiwny:
+        - Pamięć:
+            - Brak
+        - Ruch:
+            - Im mniej kart w dłoni, tym mniej oszukuje
+            - Nie oszukuje jeśli może wygrać
+            - Jeśli oszukuje - Bierze losowe x kart i deklaruje losową dozwoloną wartość
+            - Jeśli nie oszukuje - Pozbywa się jak najmniejszych kart
+        - Sprawdzanie:
+            - Tak jak gracz początkujący
+    - Wyrachowany:
+        - Pamięć:
+            - Trzyma listę możliwych kart w posiadaniu każdego gracza
+        - Ruch:
+            - Stara się grać uczciwie
+            - Jeśli oszukuje - deklaruje x kart i wybiera karty, o których ma najmniejszą wiedzę
+                (Im więcej graczy może ją posiadać tym lepiej)
+        - Sprawdzanie:
+            - Sprawdza gdy gracz może wygrać lub gdy ma pewność, że oszukuje
+"""
+
 import random
 from copy import deepcopy
 
@@ -391,7 +431,7 @@ class Calculated(Player):
             return False
 
 
-class Kid(Player):
+class Naive(Player):
 
     def __init__(self):
         self.prob1 = 0.6
@@ -400,7 +440,7 @@ class Kid(Player):
 
     @staticmethod
     def whoAmI():
-        return "Kid"
+        return "Naive"
 
     def move(self, history, player, hand, pile):
 
@@ -468,7 +508,7 @@ class Kid(Player):
                     result.append(card)
             return result, (len(result), card.val)
 
-    # always when somebody will end and when they sure somebody is lying
+    # always when somebody will win and when they sure somebody is lying
     def doubt(self, history, player, hands):
 
         def possible():
@@ -488,25 +528,50 @@ class Kid(Player):
 
 
 if __name__ == '__main__':
-    p1 = Random(challenging=0.2)
-    p2 = Beginner()
-    p3 = Calculated()
-    p4 = Kid()
+    random1 = Random(challenging=0.2)
+    random2 = Random(challenging=0.2)
+    random3 = Random(challenging=0.2)
+    random4 = Random(challenging=0.2)
 
-    players = [p1, p2, p3, p4]
-    result = {-1: 0}
-    for index in range(len(players)):
-        result[index] = 0
+    beginner1 = Beginner()
+    beginner2 = Beginner()
+    beginner3 = Beginner()
+    beginner4 = Beginner()
 
-    for index in range(NUMBER_GAMES):
-        if index % (NUMBER_GAMES / 10) == 0:
-            print(f"{index}/{NUMBER_GAMES} games done")
-        game = Game(players)
-        winner = game.loop()
-        result[winner] += 1
+    naive1 = Naive()
+    naive2 = Naive()
+    naive3 = Naive()
+    naive4 = Naive()
 
-    print("RESULTS")
-    print(f"Number of games: {NUMBER_GAMES}")
-    print(f"Draws after {MAX_NUMBER_OF_TURNS} moves: {result[-1]}")
-    for index in range(len(players)):
-        print(f"Wins of player {index} {players[index].whoAmI()}: {result[index]}, what is {result[index] * 100 / NUMBER_GAMES}%")
+    calculated1 = Calculated()
+    calculated2 = Calculated()
+    calculated3 = Calculated()
+    calculated4 = Calculated()
+
+    players_list = [
+        random1, random2, random3, random4,
+        beginner1, beginner2, beginner3, beginner4,
+        naive1, naive2, naive3, naive4,
+        calculated1, calculated2, calculated3, calculated4
+    ]
+
+    for game in range(10):
+        print(f"Players set number: {game}")
+        players = random.sample(players_list, 4)
+        result = {-1: 0}
+        for index in range(len(players)):
+            result[index] = 0
+
+        for index in range(NUMBER_GAMES):
+            # if index % (NUMBER_GAMES / 10) == 0:
+            #     print(f"{index}/{NUMBER_GAMES} games done")
+            game = Game(players)
+            winner = game.loop()
+            result[winner] += 1
+
+        # print("RESULTS")
+        # print(f"Number of games: {NUMBER_GAMES}")
+        # print(f"Draws after {MAX_NUMBER_OF_TURNS} moves: {result[-1]}")
+        for index in range(len(players)):
+            print(f"Wins of player {index} {players[index].whoAmI()}: {result[index]}, "
+                  f"what is {result[index] * 100 / NUMBER_GAMES}%")
