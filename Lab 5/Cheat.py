@@ -393,9 +393,9 @@ class Calculated(Player):
             return result, (number_of_cards, best_value)
 
         # don't lie - pick randomly card, pick all cards with same value if they exist and declare truth
-        possession.sort(key=lambda x: x.val)
-        # card = random.choice(possession)
-        card = possession[0]
+        card = random.choice(possession)
+        # possession.sort(key=lambda x: x.val)
+        # card = possession[0]
         result = [card]
         for card in possession:
             if card.val == card.val and card != card:
@@ -557,7 +557,8 @@ if __name__ == '__main__':
 
     for game in range(10):
         print(f"Players set number: {game}")
-        players = random.sample(players_list, 4)
+        # players = random.sample(players_list, 4)
+        players = [naive3, beginner1, random3, random3]
         result = {-1: 0}
         for index in range(len(players)):
             result[index] = 0
